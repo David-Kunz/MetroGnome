@@ -5,9 +5,6 @@ from gi.repository import Gtk, Gst, GObject
 import os, sys, time
 
 
-
-
-
 class Metronome:
   PLAYING = False
   TICK = 0
@@ -57,7 +54,6 @@ class Metronome:
     if self.PLAYING == True:
       GObject.source_remove(self.TAG)
       self.sound_loop()
- 
 
   def destroy(self, window):
     self.stop_sound()
