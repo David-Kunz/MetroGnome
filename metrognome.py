@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+#experimental
 from gi.repository import Gtk, Gst, GObject
 import os, sys, time
 
