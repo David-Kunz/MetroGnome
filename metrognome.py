@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+
 from gi.repository import Gtk, Gst, GObject
 import os, sys, time
 
@@ -9,6 +10,8 @@ import os, sys, time
 
 class Metronome:
   PLAYING = False
+  TICK = 0
+  MAXTICK = 4
   DURATION = 0
   DURATION_CHANGED = False
   UI_FILE = "metrognome.ui"
@@ -21,22 +24,12 @@ class Metronome:
     self.builder.connect_signals(self) 
 
     self.pipeline = Gst.Pipeline(name='metrognome')
-    self.source = Gst.ElementFactory.make('filesrc', 'src')
-    sink = Gst.ElementFactory.make('mad', 'mad')
 
-    self.player = Gst.Pipeline(name='player')
-    self.source = Gst.ElementFactory.make('filesrc', self.PLAY_FILE)
-    self.decoder = Gst.ElementFactory.make('mad', 'mp3-decoder')
-    self.sink = Gst.ElementFactory.make('alsasink', 'alsa-output')
-
-    self.player.add(self.source)
-    self.player.add(self.decoder)
-    self.player.add(self.sink)
-
-    self.source.link(self.decoder)
-    self.decoder.link(self.sink)
-
-    self.source.set_property('location', self.PLAY_FILE)
+    location = os.getcwd()
+    PLAY_FILE =  'file://' + location + '/tick.mp3'
+ 
+    self.player = Gst.ElementFactory.make('playbin2', 'player')
+    self.player.set_property('uri', PLAY_FILE) 
 
     adjustment = self.builder.get_object('adjustment')
     self.DURATION = int(round(60000/adjustment.get_value()))
@@ -61,7 +54,6 @@ class Metronome:
 
   def set_duration(self, adjustment):
     self.DURATION = int(round(60000/adjustment.get_value()))
-    print 'duration set to ' + str(self.DURATION)
     if self.PLAYING == True:
       GObject.source_remove(self.TAG)
       self.sound_loop()
@@ -72,19 +64,20 @@ class Metronome:
     Gtk.main_quit()
   
   def play_sound(self):
-      print "Play!"
       if self.PLAYING == False:
         self.player.set_state(Gst.State.NULL)
         return False
       else:
+        if self.TICK == self.MAXTICK: self.TICK=1
+        else: self.TICK+=1
         self.player.set_state(Gst.State.NULL)
         self.player.set_state(Gst.State.PLAYING)
+        
         return True 
     
   def stop_sound(self):
     self.PLAYING = False
     self.player.set_state(Gst.State.NULL)
-    print "Stop!"
     return False
 
 
