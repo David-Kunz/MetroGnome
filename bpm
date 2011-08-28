@@ -1,5 +1,0 @@
-x BPM = x/60 [1/Sekunde]
-
-DURATION/1000 [Sekunde] 
-
--> DURATION = 60000/x
