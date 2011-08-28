@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+#master-change
 from gi.repository import Gtk, Gst, GObject
 import os, sys, time
 
