@@ -20,13 +20,22 @@ class Metronome:
     self.builder.add_from_file(self.UI_FILE)
     self.builder.connect_signals(self) 
 
-    self.pipeline = Gst.Pipeline(name='metrognome')
-
-    location = os.getcwd()
-    PLAY_FILE =  'file://' + location + '/tick.mp3'
  
-    self.player = Gst.ElementFactory.make('playbin2', 'player')
-    self.player.set_property('uri', PLAY_FILE) 
+    #self.player = Gst.ElementFactory.make('playbin2', 'player')
+    source = Gst.ElementFactory.make('filesrc', 'source')
+    decoder = Gst.ElementFactory.make('mad', 'decoder')
+    converter = Gst.ElementFactory.make('audioconvert', 'converter')
+    sink = Gst.ElementFactory.make('alsasink', 'sink')
+    self.player = Gst.Pipeline()
+    self.player.add(source)
+    self.player.add(decoder)
+    self.player.add(converter)
+    self.player.add(sink)
+
+    source.link(decoder)
+    decoder.link(converter)
+    converter.link(sink)
+    source.set_property('location', self.PLAY_FILE)
 
     adjustment = self.builder.get_object('adjustment')
     self.DURATION = int(round(60000/adjustment.get_value()))
@@ -41,7 +50,7 @@ class Metronome:
   def on_button_clicked(self, button):
     if button.get_label() == 'Start':
       button.set_label('Stop')
-      self.player.set_state(Gst.State.NULL)
+      self.player.set_state(Gst.State.READY)
       self.PLAYING = True
       self.sound_loop()  
     else:
@@ -61,12 +70,12 @@ class Metronome:
   
   def play_sound(self):
       if self.PLAYING == False:
-        self.player.set_state(Gst.State.NULL)
+        self.player.set_state(Gst.State.READY)
         return False
       else:
         if self.TICK == self.MAXTICK: self.TICK=1
         else: self.TICK+=1
-        self.player.set_state(Gst.State.NULL)
+        self.player.set_state(Gst.State.READY)
         self.player.set_state(Gst.State.PLAYING)
         
         return True 
